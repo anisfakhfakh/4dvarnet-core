@@ -9,6 +9,8 @@ Created on Fri May  1 15:38:05 2020
 import numpy as np
 import torch
 from torch import nn
+import torch.nn.functional as F
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class ConvLSTM2d(torch.nn.Module):
@@ -106,13 +108,19 @@ class ConvLSTM1d(torch.nn.Module):
         return hidden, cell
 
 def compute_WeightedLoss(x2,w):
-    loss_ = torch.nansum(x2**2 , dim = 3)
-    loss_ = torch.nansum( loss_ , dim = 2)
-    loss_ = torch.nansum( loss_ , dim = 0)
-    loss_ = torch.nansum( loss_ * w )
-    loss_ = loss_ / (torch.sum(~torch.isnan(x2)) / x2.shape[1] )
+    x2_msk = x2[:, w==1, ...]
+    x2_num = ~x2_msk.isnan() & ~x2_msk.isinf()
+    loss2 = F.mse_loss(x2_msk[x2_num], torch.zeros_like(x2_msk[x2_num]))
+    loss2 = loss2 *  w.sum()
+    return loss2
+
+    #loss_ = torch.nansum(x2**2 , dim = 3)
+    ##loss_ = torch.nansum( loss_ , dim = 2)
+    #loss_ = torch.nansum( loss_ , dim = 0)
+    #loss_ = torch.nansum( loss_ * w )
+    #loss_ = loss_ / (torch.sum(~torch.isnan(x2)) / x2.shape[1] )
     
-    return loss_
+    #return loss_
 
 
 # Modules for the definition of the norms for
