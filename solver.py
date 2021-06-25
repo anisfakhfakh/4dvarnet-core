@@ -348,7 +348,7 @@ class Solver_Grad_4DVarNN(nn.Module):
     def solver_step(self, x_k, obs, mask, hidden, cell,normgrad = 0.):
         var_cost, var_cost_grad= self.var_cost(x_k, obs, mask)
         if normgrad == 0. :
-            normgrad_= torch.sqrt( torch.mean( var_cost_grad**2 ) )
+            normgrad_= torch.sqrt( torch.mean( var_cost_grad**2 + 1e-6 ) )
         else:
             normgrad_= normgrad
 
